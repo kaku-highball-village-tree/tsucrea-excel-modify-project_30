@@ -11,6 +11,7 @@ SellGeneralAdminCost_Allocation_Cmd.py を実行するGUI。
 仕様:
   - 入力は以下の2種類のみ:
       工数_yyyy年mm月_step14_各プロジェクトの計上カンパニー名_工数_カンパニーの工数.tsv
+      工数_yyyy年mm月_step15_各プロジェクトの工数.tsv
       損益計算書_yyyy年mm月_A∪B_プロジェクト名_C∪D_vertical.tsv
   - yyyy年mm月 が一致する工数/損益計算書の組み合わせのみ有効。
   - 有効な組み合わせは yyyy年mm月 の連続した範囲のみ採用する。
@@ -1005,7 +1006,11 @@ def is_manhour_csv_file(pszBaseName: str) -> bool:
 
 
 def is_step14_tsv_file(pszBaseName: str) -> bool:
-    return pszBaseName.startswith("工数_") and pszBaseName.endswith("_step14_各プロジェクトの計上カンパニー名_工数_カンパニーの工数.tsv")
+    if not pszBaseName.startswith("工数_"):
+        return False
+    if pszBaseName.endswith("_step14_各プロジェクトの計上カンパニー名_工数_カンパニーの工数.tsv"):
+        return True
+    return pszBaseName.endswith("_step15_各プロジェクトの工数.tsv")
 
 
 def is_pl_tsv_file(pszBaseName: str) -> bool:
