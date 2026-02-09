@@ -129,6 +129,8 @@ def convert_csv_to_tsv_file(pszInputCsvPath: str) -> str:
         ):
             pszHeaderFirstCell = pszHeaderFirstCell[1:-1]
             pszHeaderFirstCell = pszHeaderFirstCell.replace('""', '"')
+            pszHeaderFirstCell = pszHeaderFirstCell.replace("\t", "_")
+            pszHeaderFirstCell = pszHeaderFirstCell.replace('"', "")
         if (
             len(pszHeaderFirstCell) >= 2
             and pszHeaderFirstCell.startswith('"')
