@@ -157,6 +157,13 @@ def get_manhour_temp_output_directory() -> str:
     return pszOutputDirectory
 
 
+def get_manhour_temp_output_directory() -> str:
+    pszBaseDirectory: str = os.path.dirname(__file__)
+    pszOutputDirectory: str = os.path.join(pszBaseDirectory, "temp", "工数系")
+    os.makedirs(pszOutputDirectory, exist_ok=True)
+    return pszOutputDirectory
+
+
 def set_last_output_directory(pszDirectory: Optional[str]) -> None:
     global g_last_output_directory
     if pszDirectory is None:
