@@ -10,7 +10,8 @@ SellGeneralAdminCost_Allocation_Cmd.py を実行するGUI。
 
 仕様:
   - 入力は以下の2種類のみ:
-      工数_yyyy年mm月_step10_各プロジェクトの工数.tsv
+      工数_yyyy年mm月_step14_各プロジェクトの計上カンパニー名_工数_カンパニーの工数.tsv
+      工数_yyyy年mm月_step15_各プロジェクトの工数.tsv
       損益計算書_yyyy年mm月_A∪B_プロジェクト名_C∪D_vertical.tsv
   - yyyy年mm月 が一致する工数/損益計算書の組み合わせのみ有効。
   - 有効な組み合わせは yyyy年mm月 の連続した範囲のみ採用する。
@@ -145,6 +146,13 @@ def append_error_log(pszMessage: str) -> None:
 def get_temp_output_directory() -> str:
     pszBaseDirectory: str = os.path.dirname(__file__)
     pszOutputDirectory: str = os.path.join(pszBaseDirectory, "temp")
+    os.makedirs(pszOutputDirectory, exist_ok=True)
+    return pszOutputDirectory
+
+
+def get_manhour_temp_output_directory() -> str:
+    pszBaseDirectory: str = os.path.dirname(__file__)
+    pszOutputDirectory: str = os.path.join(pszBaseDirectory, "temp", "工数系")
     os.makedirs(pszOutputDirectory, exist_ok=True)
     return pszOutputDirectory
 
@@ -910,7 +918,7 @@ def move_manhour_outputs_to_temp(pszCsvPath: str) -> None:
     pszMonth: str = f"{iMonth:02d}"
     pszPrefix: str = f"工数_{iYear}年{pszMonth}月"
     pszSourceDirectory: str = os.path.dirname(pszCsvPath)
-    pszTempDirectory: str = get_temp_output_directory()
+    pszTempDirectory: str = get_manhour_temp_output_directory()
     pszCmdDirectory: str = os.path.dirname(__file__)
     try:
         objEntries: List[str] = os.listdir(pszSourceDirectory)
@@ -926,10 +934,7 @@ def move_manhour_outputs_to_temp(pszCsvPath: str) -> None:
             continue
         pszTargetPath: str = build_unique_temp_path(pszTempDirectory, pszEntry)
         shutil.move(pszSourcePath, pszTargetPath)
-        if pszEntry.startswith("工数_") and pszEntry.endswith("_step10_各プロジェクトの工数.tsv"):
-            pszCopyPath: str = os.path.join(pszCmdDirectory, pszEntry)
-            shutil.copy2(pszTargetPath, pszCopyPath)
-        if pszEntry.startswith("工数_") and pszEntry.endswith("_step11_各プロジェクトの計上カンパニー名_工数_カンパニーの工数.tsv"):
+        if pszEntry.startswith("工数_") and pszEntry.endswith("_step14_各プロジェクトの計上カンパニー名_工数_カンパニーの工数.tsv"):
             pszCopyPath = os.path.join(pszCmdDirectory, pszEntry)
             shutil.copy2(pszTargetPath, pszCopyPath)
 
@@ -1000,12 +1005,12 @@ def is_manhour_csv_file(pszBaseName: str) -> bool:
     return re.fullmatch(r"工数\d{2}\.\d{1,2}\.csv", pszNormalized) is not None
 
 
-def is_step10_tsv_file(pszBaseName: str) -> bool:
-    return pszBaseName.startswith("工数_") and pszBaseName.endswith("_step10_各プロジェクトの工数.tsv")
-
-
-def is_step11_tsv_file(pszBaseName: str) -> bool:
-    return pszBaseName.startswith("工数_") and pszBaseName.endswith("_step11_各プロジェクトの計上カンパニー名_工数_カンパニーの工数.tsv")
+def is_step14_tsv_file(pszBaseName: str) -> bool:
+    if not pszBaseName.startswith("工数_"):
+        return False
+    if pszBaseName.endswith("_step14_各プロジェクトの計上カンパニー名_工数_カンパニーの工数.tsv"):
+        return True
+    return pszBaseName.endswith("_step15_各プロジェクトの工数.tsv")
 
 
 def is_pl_tsv_file(pszBaseName: str) -> bool:
@@ -1214,11 +1219,11 @@ def run_manhour_csv_to_sheet(
 ) -> int:
     pszScriptPath: str = os.path.join(
         os.path.dirname(__file__),
-        "make_manhour_to_sheet8_01_0001.py",
+        "make_manhour_to_sheet8_01_0002.py",
     )
     if not os.path.exists(pszScriptPath):
         pszErrorMessage: str = (
-            "Error: make_manhour_to_sheet8_01_0001.py not found. Path = "
+            "Error: make_manhour_to_sheet8_01_0002.py not found. Path = "
             + pszScriptPath
         )
         append_error_log(pszErrorMessage)
@@ -1237,7 +1242,7 @@ def run_manhour_csv_to_sheet(
             )
         except Exception as exc:  # noqa: BLE001
             pszErrorMessage: str = (
-                "Error: unexpected exception while running make_manhour_to_sheet8_01_0001.py. Detail = "
+                "Error: unexpected exception while running make_manhour_to_sheet8_01_0002.py. Detail = "
                 + str(exc)
             )
             append_error_log(pszErrorMessage)
@@ -1249,7 +1254,7 @@ def run_manhour_csv_to_sheet(
             if pszStdErr.strip() == "":
                 pszStdErr = "Process exited with non-zero return code and no stderr output."
             pszErrorMessage = (
-                "Error: make_manhour_to_sheet8_01_0001.py exited with non-zero return code.\n\n"
+                "Error: make_manhour_to_sheet8_01_0002.py exited with non-zero return code.\n\n"
                 + "Return code = "
                 + str(objResult.returncode)
                 + "\n\n"
@@ -1266,7 +1271,7 @@ def run_manhour_csv_to_sheet(
             move_output_files_to_temp(pszStdOut)
         move_manhour_outputs_to_temp(pszCsvPath)
 
-    pszMessage: str = "make_manhour_to_sheet8_01_0001.py finished successfully."
+    pszMessage: str = "make_manhour_to_sheet8_01_0002.py finished successfully."
     show_message_box(pszMessage, "SellGeneralAdminCost_Allocation_DnD")
     return 0
 
@@ -1276,11 +1281,11 @@ def run_step10_tsv_only(
 ) -> int:
     pszScriptPath: str = os.path.join(
         os.path.dirname(__file__),
-        "make_manhour_to_sheet8_01_0001.py",
+        "make_manhour_to_sheet8_01_0002.py",
     )
     if not os.path.exists(pszScriptPath):
         pszErrorMessage: str = (
-            "Error: make_manhour_to_sheet8_01_0001.py not found. Path = "
+            "Error: make_manhour_to_sheet8_01_0002.py not found. Path = "
             + pszScriptPath
         )
         append_error_log(pszErrorMessage)
@@ -1299,7 +1304,7 @@ def run_step10_tsv_only(
             )
         except Exception as exc:  # noqa: BLE001
             pszErrorMessage: str = (
-                "Error: unexpected exception while running make_manhour_to_sheet8_01_0001.py. Detail = "
+                "Error: unexpected exception while running make_manhour_to_sheet8_01_0002.py. Detail = "
                 + str(exc)
             )
             append_error_log(pszErrorMessage)
@@ -1312,7 +1317,7 @@ def run_step10_tsv_only(
             if pszStdErr.strip() == "":
                 pszStdErr = "Process exited with non-zero return code and no stderr output."
             pszErrorMessage = (
-                "Error: make_manhour_to_sheet8_01_0001.py exited with non-zero return code.\n\n"
+                "Error: make_manhour_to_sheet8_01_0002.py exited with non-zero return code.\n\n"
                 + "Return code = "
                 + str(objResult.returncode)
                 + "\n\n"
@@ -1331,7 +1336,7 @@ def run_step10_tsv_only(
         move_manhour_outputs_to_temp(pszStep10Path)
 
     if iExitCode == 0:
-        pszMessage: str = "Step10 TSV only flow finished successfully."
+        pszMessage: str = "Manhour TSV only flow finished successfully."
         show_message_box(pszMessage, "SellGeneralAdminCost_Allocation_DnD")
     return iExitCode
 
@@ -1421,8 +1426,7 @@ def window_proc(
 
         objCsvFiles: List[str] = []
         objManhourCsvFiles: List[str] = []
-        objStep10TsvFiles: List[str] = []
-        objStep11TsvFiles: List[str] = []
+        objStep14TsvFiles: List[str] = []
         objPlTsvFiles: List[str] = []
         objUnexpectedFiles: List[str] = []
         bAllCsv: bool = True
@@ -1437,10 +1441,8 @@ def window_proc(
                 objManhourCsvFiles.append(pszFilePath)
             else:
                 bAllManhourCsv = False
-            if is_step10_tsv_file(pszBaseName):
-                objStep10TsvFiles.append(pszFilePath)
-            elif is_step11_tsv_file(pszBaseName):
-                objStep11TsvFiles.append(pszFilePath)
+            if is_step14_tsv_file(pszBaseName):
+                objStep14TsvFiles.append(pszFilePath)
             elif is_pl_tsv_file(pszBaseName):
                 objPlTsvFiles.append(pszFilePath)
             elif not (is_pl_csv_file(pszBaseName) or is_manhour_csv_file(pszBaseName)):
@@ -1452,12 +1454,12 @@ def window_proc(
             show_error_message_box(pszErrorMessage, "SellGeneralAdminCost_Allocation_DnD")
             return 0
 
-        objManhourTsvFiles: List[str] = objStep10TsvFiles + objStep11TsvFiles
+        objManhourTsvFiles: List[str] = objStep14TsvFiles
 
-        if bAllCsv and objCsvFiles and not (objStep10TsvFiles or objPlTsvFiles):
+        if bAllCsv and objCsvFiles and not (objStep14TsvFiles or objPlTsvFiles):
             run_pl_csv_to_tsv(objCsvFiles)
             return 0
-        if bAllManhourCsv and objManhourCsvFiles and not (objStep10TsvFiles or objPlTsvFiles):
+        if bAllManhourCsv and objManhourCsvFiles and not (objStep14TsvFiles or objPlTsvFiles):
             run_manhour_csv_to_sheet(objManhourCsvFiles)
             return 0
 
@@ -1470,7 +1472,7 @@ def window_proc(
             objPairs = select_consecutive_pairs(objPairs)
             if not objPairs:
                 pszErrorMessage = (
-                    "Error: dropped Step10 TSV and PL TSV files are invalid or not consecutive by year/month."
+                    "Error: dropped Step14 TSV and PL TSV files are invalid or not consecutive by year/month."
                 )
                 show_error_message_box(
                     pszErrorMessage,

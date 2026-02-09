@@ -504,18 +504,30 @@ def main() -> int:
 def create_drag_and_drop_manhour_and_pl_folder() -> None:
     pszScriptDirectory: str = os.path.dirname(os.path.abspath(__file__))
     objTargetMonths: List[str] = [f"2025年{iMonth:02d}月" for iMonth in range(4, 11)]
-    objManhourFileNames: List[str] = [
-        f"工数_{pszYearMonth}_step11_各プロジェクトの計上カンパニー名_工数_カンパニーの工数.tsv"
-        for pszYearMonth in objTargetMonths
-    ]
+    objManhourFileNames: List[str] = []
+    for pszYearMonth in objTargetMonths:
+        objManhourFileNames.extend(
+            [
+                f"工数_{pszYearMonth}_step14_各プロジェクトの計上カンパニー名_工数_カンパニーの工数.tsv",
+                f"工数_{pszYearMonth}_step15_各プロジェクトの工数.tsv",
+            ]
+        )
     objProfitLossFileNames: List[str] = [
         f"損益計算書_{pszYearMonth}_A∪B_プロジェクト名_C∪D_vertical.tsv"
         for pszYearMonth in objTargetMonths
     ]
-    objTargetFileNames: List[str] = objManhourFileNames + objProfitLossFileNames
     objExistingSourcePaths: List[str] = []
-    for pszFileName in objTargetFileNames:
-        pszSourcePath: str = os.path.join(pszScriptDirectory, pszFileName)
+    objFoundManhour = False
+    for pszFileName in objManhourFileNames:
+        pszSourcePath = os.path.join(pszScriptDirectory, pszFileName)
+        if not os.path.isfile(pszSourcePath):
+            continue
+        objFoundManhour = True
+        objExistingSourcePaths.append(pszSourcePath)
+    if not objFoundManhour:
+        return
+    for pszFileName in objProfitLossFileNames:
+        pszSourcePath = os.path.join(pszScriptDirectory, pszFileName)
         if not os.path.isfile(pszSourcePath):
             return
         objExistingSourcePaths.append(pszSourcePath)
