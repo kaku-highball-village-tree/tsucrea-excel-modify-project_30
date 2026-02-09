@@ -3856,19 +3856,19 @@ def create_pj_summary(
         objCumulativeStep0004Rows,
     )
     write_tsv_rows(pszStep0005Path, objStep0005Rows)
-    pszStep0006Path: str = os.path.join(
+    pszStep0007Path: str = os.path.join(
         pszDirectory,
         (
-            "0004_PJサマリ_step0006_単・累_損益計算書_"
+            "0004_PJサマリ_step0007_単・累_損益計算書_"
             f"{objStart[0]}年{pszSummaryStartMonth}月-"
             f"{objEnd[0]}年{pszSummaryEndMonth}月.tsv"
         ),
     )
-    objStep0006Rows = build_step0006_rows_for_summary(objStep0005Rows)
-    write_tsv_rows(pszStep0006Path, objStep0006Rows)
+    objStep0007Rows = build_step0006_rows_for_summary(read_tsv_rows(pszStep0005Path))
+    write_tsv_rows(pszStep0007Path, objStep0007Rows)
     if objStart != objEnd:
         insert_step0006_rows_into_company_summary_excel(
-            objStep0006Rows,
+            objStep0007Rows,
             objStart,
             objEnd,
         )
