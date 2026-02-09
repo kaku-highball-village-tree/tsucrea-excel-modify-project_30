@@ -70,6 +70,13 @@ def normalize_time_h_mm_to_h_mm_ss(pszTimeText: str) -> str:
     return pszText
 
 
+def normalize_cell_text(pszCellText: str) -> str:
+    pszNormalized: str = pszCellText or ""
+    if "\t" in pszNormalized or '"' in pszNormalized:
+        pszNormalized = pszNormalized.replace("\t", "_").replace('"', "")
+    return pszNormalized
+
+
 def convert_csv_to_tsv_file(pszInputCsvPath: str) -> str:
     if not os.path.exists(pszInputCsvPath):
         raise FileNotFoundError(f"Input CSV not found: {pszInputCsvPath}")
@@ -88,7 +95,10 @@ def convert_csv_to_tsv_file(pszInputCsvPath: str) -> str:
                 encoding=pszEncoding,
                 newline="",
             ) as objInputFile:
-                objReader: csv.reader = csv.reader(objInputFile)
+                objReader: csv.reader = csv.reader(
+                    objInputFile,
+                    quoting=csv.QUOTE_NONE,
+                )
                 for objRow in objReader:
                     objRows.append(list(objRow))
             objLastDecodeError = None
@@ -116,6 +126,7 @@ def convert_csv_to_tsv_file(pszInputCsvPath: str) -> str:
             objRow[iTimeColumnIndexF] = normalize_time_h_mm_to_h_mm_ss(objRow[iTimeColumnIndexF])
         if iTimeColumnIndexK < len(objRow):
             objRow[iTimeColumnIndexK] = normalize_time_h_mm_to_h_mm_ss(objRow[iTimeColumnIndexK])
+        objRow = [normalize_cell_text(objCell) for objCell in objRow]
         objRows[iRowIndex] = objRow
 
     if len(objRows) >= 1 and len(objRows[0]) >= 1:
@@ -136,6 +147,7 @@ def convert_csv_to_tsv_file(pszInputCsvPath: str) -> str:
         ):
             pszHeaderFirstCell = pszHeaderFirstCell[1:-1]
         objRows[0][0] = pszHeaderFirstCell
+        objRows[0] = [normalize_cell_text(objCell) for objCell in objRows[0]]
         if len(objRows[0]) >= 4 and objRows[0][3] == "所属グループ名":
             objRows[0][3] = "所属カンパニー名"
 
