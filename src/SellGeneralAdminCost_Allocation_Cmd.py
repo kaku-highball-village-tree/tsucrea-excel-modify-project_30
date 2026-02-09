@@ -3906,20 +3906,7 @@ def create_pj_summary(
     )
     objCumulativeStep0005Rows = add_profit_ratio_columns(read_tsv_rows(pszCumulativeStep0004Path))
     write_tsv_rows(pszCumulativeStep0005Path, objCumulativeStep0005Rows)
-    pszStep0005Path: str = os.path.join(
-        pszDirectory,
-        (
-            "0004_PJサマリ_step0005_単・累_損益計算書_"
-            f"{objStart[0]}年{pszSummaryStartMonth}月-"
-            f"{objEnd[0]}年{pszSummaryEndMonth}月.tsv"
-        ),
-    )
-    objStep0005Rows = build_step0005_rows_for_summary(
-        objSingleStep0004Rows,
-        objCumulativeStep0004Rows,
-    )
-    write_tsv_rows(pszStep0005Path, objStep0005Rows)
-    pszStep0007Path: str = os.path.join(
+    pszStep0006Path: str = os.path.join(
         pszDirectory,
         (
             "0004_PJサマリ_step0007_単・累_損益計算書_"
@@ -3927,7 +3914,13 @@ def create_pj_summary(
             f"{objEnd[0]}年{pszSummaryEndMonth}月.tsv"
         ),
     )
-    objStep0007Rows = build_step0006_rows_for_summary(read_tsv_rows(pszStep0005Path))
+    objStep0006Rows = build_step0005_rows_for_summary(
+        objSingleStep0004Rows,
+        objCumulativeStep0004Rows,
+    )
+    write_tsv_rows(pszStep0006Path, objStep0006Rows)
+    objStep0007Rows = build_step0006_rows_for_summary(read_tsv_rows(pszStep0006Path))
+    pszStep0007Path: str = pszStep0006Path.replace("step0006_", "step0007_", 1)
     write_tsv_rows(pszStep0007Path, objStep0007Rows)
     if objStart != objEnd:
         insert_step0006_rows_into_company_summary_excel(
