@@ -2672,6 +2672,53 @@ def build_step0005_rows_for_summary(
     return objOutputRows
 
 
+def add_profit_ratio_columns(objRows: List[List[str]]) -> List[List[str]]:
+    if not objRows:
+        return []
+    objHeader: List[str] = objRows[0]
+    iSalesIndex: int = find_column_index(objHeader, "純売上高")
+    iGrossProfitIndex: int = find_column_index(objHeader, "売上総利益")
+    iOperatingProfitIndex: int = find_column_index(objHeader, "営業利益")
+    if iSalesIndex < 0 or iGrossProfitIndex < 0 or iOperatingProfitIndex < 0:
+        return [list(objRow) for objRow in objRows]
+
+    objInsertSpecs = [
+        (iGrossProfitIndex + 1, "売上総利益率", iGrossProfitIndex),
+        (iOperatingProfitIndex + 1, "営業利益率", iOperatingProfitIndex),
+    ]
+    objInsertSpecs.sort(key=lambda objSpec: objSpec[0], reverse=True)
+
+    objOutputRows: List[List[str]] = []
+    for iRowIndex, objRow in enumerate(objRows):
+        objNewRow: List[str] = list(objRow)
+        for iInsertIndex, pszLabel, iProfitIndex in objInsertSpecs:
+            if iRowIndex == 0:
+                pszValue = pszLabel
+            else:
+                fSales: float = 0.0
+                fProfit: float = 0.0
+                if 0 <= iSalesIndex < len(objRow):
+                    fSales = parse_number(objRow[iSalesIndex])
+                if 0 <= iProfitIndex < len(objRow):
+                    fProfit = parse_number(objRow[iProfitIndex])
+                if abs(fSales) < 0.0000001:
+                    if fProfit > 0:
+                        pszValue = "＋∞"
+                    elif fProfit < 0:
+                        pszValue = "－∞"
+                    else:
+                        pszValue = "0"
+                else:
+                    pszValue = format_number(fProfit / fSales)
+            if iInsertIndex <= len(objNewRow):
+                objNewRow.insert(iInsertIndex, pszValue)
+            else:
+                objNewRow.extend([""] * (iInsertIndex - len(objNewRow)))
+                objNewRow.append(pszValue)
+        objOutputRows.append(objNewRow)
+    return objOutputRows
+
+
 def build_step0006_rows_for_summary(objRows: List[List[str]]) -> List[List[str]]:
     if not objRows:
         return []
@@ -3717,6 +3764,12 @@ def create_pj_summary(
     )
     objSingleStep0004Rows = build_step0004_rows_for_summary(objSingleStep0003Rows)
     write_tsv_rows(pszSingleStep0004Path, objSingleStep0004Rows)
+    pszSingleStep0005Path: str = os.path.join(
+        pszDirectory,
+        f"0004_PJサマリ_step0005_単月_損益計算書_{iEndYear}年{pszEndMonth}月.tsv",
+    )
+    objSingleStep0005Rows = add_profit_ratio_columns(read_tsv_rows(pszSingleStep0004Path))
+    write_tsv_rows(pszSingleStep0005Path, objSingleStep0005Rows)
 
     if objCumulativeRows is None:
         return
@@ -3843,19 +3896,16 @@ def create_pj_summary(
     )
     objCumulativeStep0004Rows = build_step0004_rows_for_summary(objCumulativeStep0003Rows)
     write_tsv_rows(pszCumulativeStep0004Path, objCumulativeStep0004Rows)
-    pszStep0005Path: str = os.path.join(
+    pszCumulativeStep0005Path: str = os.path.join(
         pszDirectory,
         (
-            "0004_PJサマリ_step0005_単・累_損益計算書_"
+            "0004_PJサマリ_step0005_累計_損益計算書_"
             f"{objStart[0]}年{pszSummaryStartMonth}月-"
             f"{objEnd[0]}年{pszSummaryEndMonth}月.tsv"
         ),
     )
-    objStep0005Rows = build_step0005_rows_for_summary(
-        objSingleStep0004Rows,
-        objCumulativeStep0004Rows,
-    )
-    write_tsv_rows(pszStep0005Path, objStep0005Rows)
+    objCumulativeStep0005Rows = add_profit_ratio_columns(read_tsv_rows(pszCumulativeStep0004Path))
+    write_tsv_rows(pszCumulativeStep0005Path, objCumulativeStep0005Rows)
     pszStep0006Path: str = os.path.join(
         pszDirectory,
         (
@@ -3864,11 +3914,17 @@ def create_pj_summary(
             f"{objEnd[0]}年{pszSummaryEndMonth}月.tsv"
         ),
     )
-    objStep0006Rows = build_step0006_rows_for_summary(objStep0005Rows)
+    objStep0006Rows = build_step0005_rows_for_summary(
+        objSingleStep0004Rows,
+        objCumulativeStep0004Rows,
+    )
     write_tsv_rows(pszStep0006Path, objStep0006Rows)
+    objStep0007Rows = build_step0006_rows_for_summary(read_tsv_rows(pszStep0006Path))
+    pszStep0007Path: str = pszStep0006Path.replace("step0006_", "step0007_", 1)
+    write_tsv_rows(pszStep0007Path, objStep0007Rows)
     if objStart != objEnd:
         insert_step0006_rows_into_company_summary_excel(
-            objStep0006Rows,
+            objStep0007Rows,
             objStart,
             objEnd,
         )
