@@ -3915,8 +3915,8 @@ def create_pj_summary(
         ),
     )
     objStep0006Rows = build_step0005_rows_for_summary(
-        objSingleStep0004Rows,
-        objCumulativeStep0004Rows,
+        read_tsv_rows(pszSingleStep0005Path),
+        read_tsv_rows(pszCumulativeStep0005Path),
     )
     write_tsv_rows(pszStep0006Path, objStep0006Rows)
     objStep0007Rows = build_step0006_rows_for_summary(read_tsv_rows(pszStep0006Path))
