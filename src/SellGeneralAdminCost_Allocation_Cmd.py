@@ -2733,7 +2733,7 @@ def build_step0006_rows_for_summary(objRows: List[List[str]]) -> List[List[str]]
     if len(objSubjectIndices) >= 2:
         objLabelRow[objSubjectIndices[1]] = "累計"
     iAllocationIndex: int = next(
-        (iIndex for iIndex, pszValue in enumerate(objHeaderRow) if pszValue == "配賦販管費"),
+        (iIndex for iIndex, pszValue in enumerate(objHeaderRow) if pszValue == "営業利益"),
         -1,
     )
     if iAllocationIndex >= 0:
