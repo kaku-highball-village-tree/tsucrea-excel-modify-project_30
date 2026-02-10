@@ -2733,7 +2733,7 @@ def build_step0006_rows_for_summary(objRows: List[List[str]]) -> List[List[str]]
     if len(objSubjectIndices) >= 2:
         objLabelRow[objSubjectIndices[1]] = "累計"
     iAllocationIndex: int = next(
-        (iIndex for iIndex, pszValue in enumerate(objHeaderRow) if pszValue == "配賦販管費"),
+        (iIndex for iIndex, pszValue in enumerate(objHeaderRow) if pszValue == "営業利益"),
         -1,
     )
     if iAllocationIndex >= 0:
@@ -3909,14 +3909,14 @@ def create_pj_summary(
     pszStep0006Path: str = os.path.join(
         pszDirectory,
         (
-            "0004_PJサマリ_step0007_単・累_損益計算書_"
+            "0004_PJサマリ_step0006_単・累_損益計算書_"
             f"{objStart[0]}年{pszSummaryStartMonth}月-"
             f"{objEnd[0]}年{pszSummaryEndMonth}月.tsv"
         ),
     )
     objStep0006Rows = build_step0005_rows_for_summary(
-        objSingleStep0004Rows,
-        objCumulativeStep0004Rows,
+        read_tsv_rows(pszSingleStep0005Path),
+        read_tsv_rows(pszCumulativeStep0005Path),
     )
     write_tsv_rows(pszStep0006Path, objStep0006Rows)
     objStep0007Rows = build_step0006_rows_for_summary(read_tsv_rows(pszStep0006Path))
