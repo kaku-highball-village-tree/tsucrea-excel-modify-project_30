@@ -3873,7 +3873,7 @@ def create_pj_summary(
     pszStep0006Path0005: str = os.path.join(
         pszDirectory,
         (
-            "0005_PJサマリ_step0006_単・累_損益計算書_"
+            "0005_PJサマリ_step0007_単・累_損益計算書_"
             f"{objStart[0]}年{pszSummaryStartMonth}月-"
             f"{objEnd[0]}年{pszSummaryEndMonth}月.tsv"
         ),
