@@ -3860,20 +3860,20 @@ def create_pj_summary(
     pszStep0005Path0005: str = os.path.join(
         pszDirectory,
         (
-            "0005_PJサマリ_step0005_単・累_損益計算書_"
+            "0005_PJサマリ_step0006_単・累_損益計算書_"
             f"{objStart[0]}年{pszSummaryStartMonth}月-"
             f"{objEnd[0]}年{pszSummaryEndMonth}月.tsv"
         ),
     )
     objStep0005Rows0005 = build_step0005_rows_for_summary(
-        objSingleStep0004Rows0005,
-        objCumulativeStep0004Rows0005,
+        add_profit_ratio_columns(objSingleStep0004Rows0005),
+        add_profit_ratio_columns(objCumulativeStep0004Rows0005),
     )
     write_tsv_rows(pszStep0005Path0005, objStep0005Rows0005)
     pszStep0006Path0005: str = os.path.join(
         pszDirectory,
         (
-            "0005_PJサマリ_step0006_単・累_損益計算書_"
+            "0005_PJサマリ_step0007_単・累_損益計算書_"
             f"{objStart[0]}年{pszSummaryStartMonth}月-"
             f"{objEnd[0]}年{pszSummaryEndMonth}月.tsv"
         ),
