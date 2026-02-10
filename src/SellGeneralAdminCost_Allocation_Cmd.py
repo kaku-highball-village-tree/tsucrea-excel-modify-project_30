@@ -2741,6 +2741,43 @@ def build_step0006_rows_for_summary(objRows: List[List[str]]) -> List[List[str]]
     return [objLabelRow] + [list(objRow) for objRow in objRows]
 
 
+def build_step0006_rows_for_summary_0005(
+    objSingleRows: List[List[str]],
+    objCumulativeRows: List[List[str]],
+) -> List[List[str]]:
+    iMaxRows: int = max(len(objSingleRows), len(objCumulativeRows))
+    objOutputRows: List[List[str]] = []
+    for iRowIndex in range(iMaxRows):
+        objSingleRow: List[str] = objSingleRows[iRowIndex] if iRowIndex < len(objSingleRows) else []
+        objCumulativeRow: List[str] = (
+            objCumulativeRows[iRowIndex] if iRowIndex < len(objCumulativeRows) else []
+        )
+        objOutputRows.append(list(objSingleRow) + [""] + list(objCumulativeRow))
+    return objOutputRows
+
+
+def build_step0007_rows_for_summary_0005(objRows: List[List[str]]) -> List[List[str]]:
+    if not objRows:
+        return []
+    objHeaderRow: List[str] = objRows[0]
+    iHeaderLength: int = len(objHeaderRow)
+    objLabelRow: List[str] = [""] * iHeaderLength
+    objSubjectIndices: List[int] = [
+        iIndex for iIndex, pszValue in enumerate(objHeaderRow) if pszValue == "科目名"
+    ]
+    if len(objSubjectIndices) >= 1:
+        objLabelRow[objSubjectIndices[0]] = "単月"
+    if len(objSubjectIndices) >= 2:
+        objLabelRow[objSubjectIndices[1]] = "累計"
+    iAllocationIndex: int = next(
+        (iIndex for iIndex, pszValue in enumerate(objHeaderRow) if pszValue == "営業利益"),
+        -1,
+    )
+    if iAllocationIndex >= 0:
+        objLabelRow[iAllocationIndex] = "カンパニー別合計"
+    return [objLabelRow] + [list(objRow) for objRow in objRows]
+
+
 def build_step0007_rows_from_step0006_path(pszStep0006Path: str) -> None:
     if not os.path.isfile(pszStep0006Path):
         return
@@ -3857,7 +3894,7 @@ def create_pj_summary(
         objCumulativeStep0003Rows0005
     )
     write_tsv_rows(pszCumulativeStep0004Path0005, objCumulativeStep0004Rows0005)
-    pszStep0005Path0005: str = os.path.join(
+    pszStep0006Path0005: str = os.path.join(
         pszDirectory,
         (
             "0005_PJサマリ_step0006_単・累_損益計算書_"
@@ -3865,12 +3902,12 @@ def create_pj_summary(
             f"{objEnd[0]}年{pszSummaryEndMonth}月.tsv"
         ),
     )
-    objStep0005Rows0005 = build_step0005_rows_for_summary(
+    objStep0006Rows0005 = build_step0006_rows_for_summary_0005(
         add_profit_ratio_columns(objSingleStep0004Rows0005),
         add_profit_ratio_columns(objCumulativeStep0004Rows0005),
     )
-    write_tsv_rows(pszStep0005Path0005, objStep0005Rows0005)
-    pszStep0006Path0005: str = os.path.join(
+    write_tsv_rows(pszStep0006Path0005, objStep0006Rows0005)
+    pszStep0007Path0005: str = os.path.join(
         pszDirectory,
         (
             "0005_PJサマリ_step0007_単・累_損益計算書_"
@@ -3878,11 +3915,11 @@ def create_pj_summary(
             f"{objEnd[0]}年{pszSummaryEndMonth}月.tsv"
         ),
     )
-    objStep0006Rows0005 = build_step0006_rows_for_summary(objStep0005Rows0005)
-    write_tsv_rows(pszStep0006Path0005, objStep0006Rows0005)
+    objStep0007Rows0005 = build_step0007_rows_for_summary_0005(objStep0006Rows0005)
+    write_tsv_rows(pszStep0007Path0005, objStep0007Rows0005)
     if objStart != objEnd:
         insert_step0006_rows_into_group_summary_excel(
-            objStep0006Rows0005,
+            objStep0007Rows0005,
             objStart,
             objEnd,
         )
