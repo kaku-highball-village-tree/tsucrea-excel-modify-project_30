@@ -3866,8 +3866,8 @@ def create_pj_summary(
         ),
     )
     objStep0005Rows0005 = build_step0005_rows_for_summary(
-        objSingleStep0004Rows0005,
-        objCumulativeStep0004Rows0005,
+        add_profit_ratio_columns(objSingleStep0004Rows0005),
+        add_profit_ratio_columns(objCumulativeStep0004Rows0005),
     )
     write_tsv_rows(pszStep0005Path0005, objStep0005Rows0005)
     pszStep0006Path0005: str = os.path.join(
